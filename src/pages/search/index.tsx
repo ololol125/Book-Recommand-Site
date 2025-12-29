@@ -1,24 +1,26 @@
 import SearchableLayout from "@/components/searchable-layout";
-import { useRouter } from "next/router"; //Query String(?q=박영현)을 처리하기 위해 임포트
-import { ReactNode } from "react";
-import books from "@/mock/books.json";
+import { ReactNode, useEffect, useState } from "react";
 import BookItem from "@/components/book-item";
-import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import fetchBooks from "@/lib/fetch-books";
-// 쿼리스트링을 처리하기 위해 context 매개변수 추가
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const q = context.query.q;
-  const books = await fetchBooks(q as string);
-  return {
-    props: { books },
-  };
-};
+import { useRouter } from "next/router";
+import { BookData } from "@/types";
 
-export default function Page({
-  books,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Page() {
+  const [books, setBooks] = useState<BookData[]>([]);
+
+  const router = useRouter();
+  const q = router.query.q;
+
+  const fetchSearchResult = async () => {
+    const data = await fetchBooks(q as string);
+    setBooks(data);
+  };
+
+  useEffect(() => {
+    if (q) {
+      fetchSearchResult();
+    }
+  }, [q]);
   return (
     <div>
       {books.map((book) => (
